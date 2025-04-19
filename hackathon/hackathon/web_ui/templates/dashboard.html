@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VenueFlow AI - Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #fff;
+    }
+
+    h1 {
+      color: #00ffd5;
+      font-weight: bold;
+    }
+
+    .card {
+      background-color: rgba(255, 255, 255, 0.05);
+      border: none;
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: #00bcd4 !important;
+      color: white;
+      font-weight: bold;
+    }
+
+    .table {
+      color: #fff;
+    }
+
+    .table th,
+    .table td {
+      vertical-align: middle;
+    }
+
+    .table-secondary {
+      background-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .badge {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+    }
+
+    .badge.bg-danger {
+      background-color: #e74c3c !important;
+    }
+
+    .badge.bg-success {
+      background-color: #2ecc71 !important;
+    }
+
+    .container {
+      max-width: 1000px;
+    }
+
+    .threshold-slider {
+      width: 100%;
+    }
+
+    .threshold-value {
+      color: #fff;
+      font-weight: bold;
+    }
+
+    @media screen and (max-width: 576px) {
+      .card-header h5 {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="mb-4 text-center">📊 VenueFlow AI – Crowd Monitoring Dashboard</h1>
+    <div class="text-end mb-3">
+      <a href="/heatmap" class="btn btn-outline-danger">
+        🔥 View Heatmap
+      </a>
+    </div>
+
+    <!-- Threshold Control Section -->
+    <div class="card shadow mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">Set Alert Threshold</h5>
+      </div>
+      <div class="card-body p-4">
+        <label for="thresholdSlider" class="form-label">Threshold Frequency (People Count)</label>
+        <input type="range" class="form-range threshold-slider" id="thresholdSlider" min="1" max="100" step="1" value="{{ current_threshold }}">
+        <p class="threshold-value text-center">Current Threshold: <span id="thresholdValue">{{ current_threshold }}</span></p>
+      </div>
+    </div>
+
+    <div class="card shadow mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">Recent Crowd Logs</h5>
+      </div>
+      <div class="card-body p-4">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead class="table-secondary text-center">
+              <tr>
+                <th>ID</th>
+                <th>Timestamp</th>
+                <th>People Count</th>
+                <th>Alert Triggered</th>
+              </tr>
+            </thead>
+            <tbody class="text-center">
+              {% for row in logs %}
+                <tr>
+                  <td>{{ row[0] }}</td>
+                  <td>{{ row[1] }}</td>
+                  <td>{{ row[2] }}</td>
+                  <td>
+                    {% if row[3] == 'YES' %}
+                      <span class="badge bg-danger">YES</span>
+                    {% else %}
+                      <span class="badge bg-success">NO</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Update the displayed threshold value as the slider is moved
+    document.getElementById('thresholdSlider').addEventListener('input', function() {
+      document.getElementById('thresholdValue').textContent = this.value;
+    });
+
+    // Send updated threshold value to the server (make an AJAX request)
+    document.getElementById('thresholdSlider').addEventListener('change', function() {
+      const thresholdValue = this.value;
+      fetch('/update-threshold', {
+        method: 'POST',
+        body: JSON.stringify({ threshold: thresholdValue }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+    });
+  </script>
+</body>
+</html>
